@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     # Local apps
     "src.users",
+    "src.logapi",
 ]
 
 # Custom user model
