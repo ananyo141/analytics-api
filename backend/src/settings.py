@@ -163,14 +163,6 @@ if not DEBUG:
         )
     }
 
-NUTRITIONIX = {
-    "API_URL": env.get("NUTRITIONIX_API_URL"),
-    "HEADERS": {
-        "x-app-id": env.get("NUTRITIONIX_APP_ID"),
-        "x-app-key": env.get("NUTRITIONIX_APP_KEY"),
-    },
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
