@@ -1,17 +1,21 @@
 from django.db import models
 
 
-# Request and response models for API calls
+# Request Model for API calls
 class ApiLogRequest(models.Model):
     method = models.CharField(max_length=10)
-    request_object = models.JSONField()
+    body = models.JSONField()
+    headers = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+# Response Model for API calls
 class ApiLogResponse(models.Model):
     api_log_request = models.OneToOneField(
         ApiLogRequest, on_delete=models.CASCADE)
-    response_object = models.JSONField()
+    body = models.JSONField()
+    headers = models.JSONField(default=dict)
+    status_code = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
 

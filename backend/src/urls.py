@@ -44,6 +44,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # user routes
     path("user/", include("src.users.urls")),
+    # logapi routes
+    path("hello/", include("src.logapi.urls")),
     # documentation
     path("docs/", SpectacularAPIView.as_view(), name="schema"),
     path(
