@@ -1,6 +1,7 @@
 import random
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from rest_framework import generics, filters
 from django_filters import rest_framework as django_filters
@@ -63,11 +64,15 @@ class AnalyticsView(generics.ListAPIView):
     filterset_fields = ['userId', 'success']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         # Get the time range from the request query parameters
         time_range = self.request.query_params.get('time_range', None)
         queryset = ApiLog.objects.all()
+
+        self.failure_count = 0  # initialize counts, so that they are always
+        self.distinct_user_count = 0  # present in the response
 
         # Apply time filter if provided
         if time_range:
@@ -102,8 +107,10 @@ class AnalyticsView(generics.ListAPIView):
                     'last_7_days, custom')
 
             queryset = queryset.filter(
-                created_at__gte=timezone.make_aware(start_time),
-                created_at__lte=timezone.make_aware(end_time)
+                created_at__gte=timezone.make_aware(
+                    start_time) if time_range == 'custom' else start_time,
+                created_at__lte=timezone.make_aware(
+                    end_time) if time_range == 'custom' else end_time
             ).prefetch_related(
                 'api_request', 'api_response'
             ).prefetch_related('api_response', 'api_response')
