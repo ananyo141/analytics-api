@@ -1,5 +1,6 @@
 import random
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 from rest_framework import status
 from rest_framework import generics, filters
 from django_filters import rest_framework as django_filters
@@ -45,7 +46,7 @@ class HelloView(APIView):
         ApiLog.objects.create(
             userId=kwargs.get("userid"),
             status_code=response.status_code,
-            url=request.path,
+            url=request.get_full_path(),
             api_request=api_log_request,
             api_response=api_log_response,
             success=response.status_code == status.HTTP_200_OK,
@@ -68,18 +69,38 @@ class AnalyticsView(generics.ListAPIView):
         queryset = ApiLog.objects.all()
         # Apply time filter if provided
         if time_range:
-            now = datetime.now()
+            end_time = datetime.now()  # default end time is now
             if time_range == 'last_24_hours':
-                start_time = now - timedelta(hours=24)
+                start_time = end_time - timedelta(hours=24)
             elif time_range == 'last_7_days':
-                start_time = now - timedelta(days=7)
+                start_time = end_time - timedelta(days=7)
             elif time_range == 'custom':
+                if not self.request.query_params.get('start_date') \
+                        or not self.request.query_params.get(
+                        'end_date'):
+                    raise ValidationError(
+                        'start_date and end_date are required '
+                        'for custom time range')
+
                 # Implement custom time range logic here
-                start_time = datetime.strptime(
-                    self.request.query_params['start_date'], "%Y-%m-%d")
+                try:
+                    start_time = datetime.strptime(
+                        self.request.query_params.get('start_date'),
+                        "%d-%m-%Y")
+                    end_time = datetime.strptime(
+                        self.request.query_params.get('end_date', end_time),
+                        "%d-%m-%Y")
+                except ValueError:
+                    raise ValidationError(
+                        'start_date and end_date must be in the format '
+                        'dd-mm-yyyy')
+            else:
+                raise ValidationError(
+                    'time_range must be one of last_24_hours, '
+                    'last_7_days, custom')
 
             queryset = queryset.filter(
-                created_at__gte=start_time, created_at__lte=now
+                created_at__gte=start_time, created_at__lte=end_time
             ).prefetch_related(
                 'api_request', 'api_response'
             ).prefetch_related('api_response', 'api_response')
