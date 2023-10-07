@@ -1,3 +1,4 @@
+import random
 from rest_framework.views import APIView
 from rest_framework import status
 
@@ -9,6 +10,18 @@ class HelloView(APIView):
     permission_classes = []
 
     def finalize_response(self, request, response, *args, **kwargs):
+        success = random.random() <= 0.5  # 50% chance of success
+
+        # Create response
+        content = {"message": "Hello, World!"}
+        response = createResponse(
+            message=f"Hi there user {kwargs.get('userid')}",
+            success=success,
+            data=content,
+            status_code=status.HTTP_200_OK
+                    if success else status.HTTP_418_IM_A_TEAPOT,
+        )
+
         # Create ApiLogRequest
         api_log_request = ApiLogRequest.objects.create(
             method=request.method,
@@ -35,12 +48,4 @@ class HelloView(APIView):
             response_time=0,
         )
 
-        # Create response
-        content = {"message": "Hello, World!"}
-        response = createResponse(
-            message=f"Hi there user {kwargs.get('userid')}",
-            success=True,
-            data=content,
-            status_code=status.HTTP_200_OK,
-        )
         return super().finalize_response(request, response, *args, **kwargs)
