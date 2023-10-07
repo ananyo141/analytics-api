@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 from rest_framework import generics, filters
 from django_filters import rest_framework as django_filters
+from django.utils import timezone
 from datetime import datetime, timedelta
 
 from src.utils.createResponse import createResponse
@@ -67,9 +68,10 @@ class AnalyticsView(generics.ListAPIView):
         # Get the time range from the request query parameters
         time_range = self.request.query_params.get('time_range', None)
         queryset = ApiLog.objects.all()
+
         # Apply time filter if provided
         if time_range:
-            end_time = datetime.now()  # default end time is now
+            end_time = timezone.now()  # default end time is now
             if time_range == 'last_24_hours':
                 start_time = end_time - timedelta(hours=24)
             elif time_range == 'last_7_days':
@@ -100,9 +102,20 @@ class AnalyticsView(generics.ListAPIView):
                     'last_7_days, custom')
 
             queryset = queryset.filter(
-                created_at__gte=start_time, created_at__lte=end_time
+                created_at__gte=timezone.make_aware(start_time),
+                created_at__lte=timezone.make_aware(end_time)
             ).prefetch_related(
                 'api_request', 'api_response'
             ).prefetch_related('api_response', 'api_response')
 
+            self.failure_count = queryset.filter(success=False).count()
+            self.distinct_user_count = queryset.values(
+                'userId').distinct().count()
+
         return queryset
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        # Add failure_count, distinct users to response
+        response.data['failure_count'] = self.failure_count
+        response.data['distinct_users'] = self.distinct_user_count
+        return super().finalize_response(request, response, *args, **kwargs)
