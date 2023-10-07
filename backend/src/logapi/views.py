@@ -45,7 +45,6 @@ class HelloView(APIView):
             api_request=api_log_request,
             api_response=api_log_response,
             success=response.status_code == status.HTTP_200_OK,
-            response_time=0,
         )
 
         return super().finalize_response(request, response, *args, **kwargs)

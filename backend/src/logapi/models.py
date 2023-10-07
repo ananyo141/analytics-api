@@ -32,7 +32,6 @@ class ApiLog(models.Model):
         ApiLogResponse, on_delete=models.CASCADE,
     )
     success = models.BooleanField()
-    response_time = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
