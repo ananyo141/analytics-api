@@ -21,6 +21,14 @@ class ApiLogResponse(models.Model):
 
 # Main log model for API calls
 class ApiLog(models.Model):
+    class Meta:
+        indexes = [
+            # create index for created_at field for faster query
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['userId']),
+            models.Index(fields=['success']),
+        ]
+
     userId = models.CharField(max_length=40, null=False, blank=False)
     status_code = models.IntegerField()
     url = models.CharField(max_length=150, null=False, blank=False)
