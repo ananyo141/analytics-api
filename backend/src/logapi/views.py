@@ -82,9 +82,6 @@ class AnalyticsView(generics.ListAPIView):
         # Get the time range from the request query parameters
         time_range = self.request.query_params.get("time_range", None)
 
-        self.failure_count = 0  # initialize counts, so that they are always
-        self.distinct_user_count = 0  # present in the response
-
         # Apply time filter if provided
         if time_range:
             end_time = timezone.now()  # default end time is now
@@ -144,6 +141,8 @@ class AnalyticsView(generics.ListAPIView):
 
     def finalize_response(self, request, response, *args, **kwargs):
         # Add failure_count, distinct users to response
-        response.data["failure_count"] = self.failure_count
-        response.data["distinct_users"] = self.distinct_user_count
+        response.data["failure_count"] = self.failure_count if hasattr(
+            self, "failure_count") else 0
+        response.data["distinct_users"] = self.distinct_user_count if hasattr(
+            self, "distinct_user_count") else 0
         return super().finalize_response(request, response, *args, **kwargs)
