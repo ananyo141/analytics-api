@@ -122,8 +122,12 @@ MIDDLEWARE = [
 ]
 
 # Allow all origins for CORS
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://*.vercel.app",
+    "https://*.onrender.com",
+]
 
 ROOT_URLCONF = "src.urls"
 

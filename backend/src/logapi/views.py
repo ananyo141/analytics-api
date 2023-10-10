@@ -80,7 +80,8 @@ class AnalyticsView(generics.ListAPIView):
 
     def get_queryset(self):
         # Get the time range from the request query parameters
-        time_range = self.request.query_params.get("time_range", None)
+        time_range = self.request.query_params.get("time_range",
+                                                   "last_24_hours")
 
         # Apply time filter if provided
         if time_range:
