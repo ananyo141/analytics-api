@@ -75,12 +75,22 @@ class Login(TokenObtainPairView):
 
     def finalize_response(self, request, response, *args, **kwargs):
         if response.status_code == status.HTTP_200_OK:
+            accessToken = response.data.get("access")
             response = createResponse(
                 message="User logged in successfully",
                 success=True,
                 data=response.data,
                 status_code=response.status_code,
             )
+            response.set_cookie(
+                key="accessToken",
+                value=accessToken,
+                expires=86400,  # 1 day
+                httponly=True,
+                samesite="Strict",  # 'Lax' or 'Strict
+                secure=True,
+            )
+
         return super().finalize_response(request, response, *args, **kwargs)
 
 

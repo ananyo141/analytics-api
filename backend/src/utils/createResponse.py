@@ -11,12 +11,17 @@ def buildResponse(*, message, data={}, success=True):
 
 
 def createResponse(
-    *, message, data={}, success=True, status_code=status.HTTP_200_OK
+    *,
+    message,
+    data={},
+    success=True,
+    status_code=status.HTTP_200_OK,
+    headers={
+        "content-type": "application/json",
+    }
 ):
     return Response(
         buildResponse(message=message, data=data, success=success),
         status=status_code,
-        headers={
-            "content-type": "application/json",
-        },
+        headers=headers,
     )
