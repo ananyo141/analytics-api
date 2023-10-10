@@ -87,7 +87,6 @@ class Login(TokenObtainPairView):
                 value=accessToken,
                 expires=86400,  # 1 day
                 httponly=True,
-                samesite="None",  # 'Lax' or 'Strict
                 secure=True,
             )
 
