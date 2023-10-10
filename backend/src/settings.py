@@ -125,8 +125,7 @@ MIDDLEWARE = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://*.vercel.app",
-    "https://*.onrender.com",
+    "https://analytics-dashboard-frontend.vercel.app",
 ]
 
 ROOT_URLCONF = "src.urls"
