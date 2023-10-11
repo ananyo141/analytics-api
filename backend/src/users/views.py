@@ -85,9 +85,9 @@ class Login(TokenObtainPairView):
             response.set_cookie(
                 key="accessToken",
                 value=accessToken,
-                expires=86400,  # 1 day
+                expires=259200,  # 3 days
                 httponly=True,
-                samesite="Strict",  # 'Lax' or 'Strict
+                samesite="None",  # 'Lax' or 'Strict for same origin
                 secure=True,
             )
 
