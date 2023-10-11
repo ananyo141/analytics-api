@@ -86,9 +86,9 @@ class Login(TokenObtainPairView):
                 key="accessToken",
                 value=accessToken,
                 expires=86400,  # 1 day
-                httponly=False,
-                samesite="None",  # 'Lax' or 'Strict
-                secure=False,
+                httponly=True,
+                samesite="Strict",  # 'Lax' or 'Strict
+                secure=True,
             )
 
         return super().finalize_response(request, response, *args, **kwargs)

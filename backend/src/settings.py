@@ -127,30 +127,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://analytics-dashboard-frontend.vercel.app",
 ]
-ACCESS_CONTROL_ALLOW_HEADERS = True
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-CSRF_COOKIE_HTTPONLY = False
-
-CSRF_COOKIE_SAMESITE = 'None'
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-    "Access-Control-Allow-Origin",
-]
 
 ROOT_URLCONF = "src.urls"
 
