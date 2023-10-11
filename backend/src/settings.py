@@ -126,6 +126,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://analytics-dashboard-frontend.vercel.app",
+    "https://analytics-dashboard-git-cookies-cors-ananyo141.vercel.app",
 ]
 
 ROOT_URLCONF = "src.urls"
