@@ -15,6 +15,7 @@ type ChartData = Array<{
 }>;
 
 export default function normalizeChartData(data: ApiData[]): ChartData {
+  if (!data || !data.length) return [];
   const endDate = new Date(data[0]?.created_at);
   const startDate = new Date(data[data.length - 1]?.created_at);
 
@@ -38,9 +39,11 @@ export default function normalizeChartData(data: ApiData[]): ChartData {
     const hourKey = createdAt.toISOString().substring(0, 13); // Use the hour part as the key
 
     // Count distinct users
-    hourlyStatsMap.get(hourKey)?.users.add(item.userId);
-    (hourlyStatsMap.get(hourKey) as any).calls++;
-    if (!item.success) (hourlyStatsMap.get(hourKey) as any).failures++;
+    const hourStat = hourlyStatsMap.get(hourKey);
+    if (!hourStat) continue;
+    hourStat.users.add(item.userId);
+    hourStat.calls++;
+    if (!item.success) hourStat.failures++;
   }
 
   // Convert the map to an array of ChartData objects

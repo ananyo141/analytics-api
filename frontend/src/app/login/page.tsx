@@ -4,12 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useAtom } from "jotai";
 
 import { API_BASE_URL } from "@/constants";
+import { userAtom } from "@/state/userAtoms";
 
 type Props = {};
 
 const Login = (props: Props) => {
+  const [user, setUser] = useAtom(userAtom);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -27,6 +31,10 @@ const Login = (props: Props) => {
       if (!data.success)
         return toast.error(data.message || "Something went wrong");
       toast.success("Logged in successfully");
+      setUser({
+        isAuthenticated: true,
+        accessToken: data.data.access,
+      });
       router.push("/");
     } catch (err: any) {
       toast.error(err.toString());
