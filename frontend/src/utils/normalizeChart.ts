@@ -7,14 +7,14 @@ type ApiData = {
   created_at: string;
 } & { [key: string | number]: any }; // any other fields
 
-type ChartData = Array<{
+export type ChartDataType = Array<{
   hour: string;
   users: number;
   calls: number;
   failure: number;
 }>;
 
-export default function normalizeChartData(data: ApiData[]): ChartData {
+export default function normalizeChartData(data: ApiData[]): ChartDataType {
   if (!data || !data.length) return [];
   const endDate = new Date(data[0]?.created_at);
   const startDate = new Date(data[data.length - 1]?.created_at);
@@ -47,7 +47,7 @@ export default function normalizeChartData(data: ApiData[]): ChartData {
   }
 
   // Convert the map to an array of ChartData objects
-  const chartData: ChartData = [];
+  const chartData: ChartDataType = [];
   hourlyStatsMap.forEach((stats, hourKey) => {
     chartData.push({
       hour: hourKey,

@@ -13,10 +13,12 @@ import {
 import { useAtomValue } from "jotai";
 import { subDays, format } from "date-fns";
 
-import ApiHitButton from "./ApiHitButton";
-import normalizeChart from "@/utils/normalizeChart";
+import normalizeChart, { type ChartDataType } from "@/utils/normalizeChart";
 import { userAtom } from "@/state/userAtoms";
 import { API_BASE_URL } from "@/constants";
+
+import ApiHitButton from "./ApiHitButton";
+import LogTable, { type ApiLogType } from "./LogTable";
 
 export default () => {
   const user = useAtomValue(userAtom);
@@ -32,7 +34,8 @@ export default () => {
     to: dateNow,
   });
 
-  const [chartdata, setChartData] = useState([]);
+  const [chartdata, setChartData] = useState<ChartDataType>([]);
+  const [tableData, setTableData] = useState<ApiLogType>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,7 +57,8 @@ export default () => {
       );
       const data = await res.json();
 
-      setChartData(normalizeChart(data.results) as any);
+      setTableData(data.results)
+      setChartData(normalizeChart(data.results as ApiLogType));
       setButtonLoader({ left: false, right: false });
     };
     fetchData();
@@ -112,6 +116,8 @@ export default () => {
           showAnimation={true}
         />
       </Card>
+      <LogTable data={tableData} />
+
       <div className="flex items-center p-4 justify-end gap-5">
         <Button
           className="border"
