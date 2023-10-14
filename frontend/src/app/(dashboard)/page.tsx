@@ -6,6 +6,8 @@ import {
   Button,
   Title,
   LineChart,
+  DonutChart,
+  BarChart,
   DateRangePicker,
   DateRangePickerItem,
   DateRangePickerValue,
@@ -20,6 +22,12 @@ import { API_BASE_URL } from "@/constants";
 import ApiHitButton from "./ApiHitButton";
 import LogTable, { type ApiLogType } from "./LogTable";
 
+interface StatsType {
+  total_calls: number;
+  total_fails: number;
+  total_users: number;
+}
+
 export default () => {
   const user = useAtomValue(userAtom);
   const dateNow = new Date();
@@ -30,37 +38,48 @@ export default () => {
     right: false,
   });
   const [dateRange, setDateRange] = useState<DateRangePickerValue>({
-    from: subDays(dateNow, 1),
+    from: subDays(dateNow, 7), // default to last 7 days
     to: dateNow,
   });
 
   const [chartdata, setChartData] = useState<ChartDataType>([]);
   const [tableData, setTableData] = useState<ApiLogType>([]);
+  const [statsData, setStatsData] = useState<StatsType>({
+    total_calls: 0,
+    total_fails: 0,
+    total_users: 0,
+  });
+
+  const fetchData = async () => {
+    if (!user.isAuthenticated) return;
+    const res = await fetch(
+      API_BASE_URL +
+        `/hello/analytics/?page=${page}&time_range=custom&start_date=${format(
+          dateRange.from ?? dateNow,
+          "dd-MM-yyyy",
+        )}&end_date=${format(dateRange.to ?? dateNow, "dd-MM-yyyy")}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+        next: { revalidate: 60 }, // invalidate cache every minute
+      },
+    );
+    const data = await res.json();
+
+    setTableData(data.results);
+    setStatsData({
+      total_calls: data.count,
+      total_fails: data.failure_count,
+      total_users: data.distinct_users,
+    });
+    setChartData(normalizeChart(data.results as ApiLogType));
+    setButtonLoader({ left: false, right: false });
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user.isAuthenticated) return;
-      const res = await fetch(
-        API_BASE_URL +
-          `/hello/analytics/?page=${page}&time_range=custom&start_date=${format(
-            dateRange.from ?? dateNow,
-            "dd-MM-yyyy",
-          )}&end_date=${format(dateRange.to ?? dateNow, "dd-MM-yyyy")}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.accessToken}`,
-          },
-          next: { revalidate: 60 }, // invalidate cache every minute
-        },
-      );
-      const data = await res.json();
-
-      setTableData(data.results)
-      setChartData(normalizeChart(data.results as ApiLogType));
-      setButtonLoader({ left: false, right: false });
-    };
     fetchData();
   }, [user.accessToken, dateRange, page]);
 
@@ -92,10 +111,10 @@ export default () => {
             Custom
           </DateRangePickerItem>
         </DateRangePicker>
-        <ApiHitButton />
+        <ApiHitButton onClick={fetchData} />
       </div>
       <Card>
-        <Title>
+        <Title className="text-center">
           API Analytics
           {dateRange.from &&
             dateRange.to &&
@@ -105,8 +124,41 @@ export default () => {
               format(dateRange.to ?? dateNow, "dd MMM") +
               ")"}
         </Title>
+        <div className="flex items-center gap-5 py-4 flex-row-reverse justify-center">
+          <DonutChart
+            className="w-1/2 h-72"
+            data={[
+              {
+                name: "Success",
+                value: statsData.total_calls - statsData.total_fails,
+              },
+              { name: "Fails", value: statsData.total_fails },
+            ]}
+            category="value"
+            index="name"
+            valueFormatter={(value) => value.toString() + " total"}
+            colors={["indigo", "rose"]}
+          />
+          <BarChart
+            className="max-w-xl"
+            data={[
+              { name: "Total Calls", count: statsData.total_calls },
+              {
+                name: "Total Success",
+                count: statsData.total_calls - statsData.total_fails,
+              },
+              { name: "Total Fails", count: statsData.total_fails },
+              { name: "Total Users", count: statsData.total_users },
+            ]}
+            index="name"
+            showLegend={false}
+            categories={["count"]}
+            colors={["cyan"]}
+            valueFormatter={(value) => value.toString() + " total"}
+          />
+        </div>
+        <Title className="mt-6 text-center">Hourly Analytics</Title>
         <LineChart
-          className="mt-6"
           data={chartdata}
           index="hour"
           categories={["calls", "failure", "users"]}

@@ -7,9 +7,10 @@ import genRandomUserid from "@/utils/genRandomUserid";
 
 type Props = {
   className?: string;
+  onClick?: Function;
 };
 
-const ApiHitButton = ({ className }: Props) => {
+const ApiHitButton = ({ className, onClick = () => {} }: Props) => {
   const [loading, setLoading] = React.useState(false);
 
   const hitApi = async () => {
@@ -28,6 +29,7 @@ const ApiHitButton = ({ className }: Props) => {
       );
       if (!res.ok) toast.error(`User ${userid}: API Failure`);
       else toast.success(`User ${userid}: API Success`);
+      onClick();
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
     } finally {
