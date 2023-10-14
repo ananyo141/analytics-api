@@ -10,8 +10,8 @@ import {
   TableHeaderCell,
   TableBody,
   Badge,
-  Button,
 } from "@tremor/react";
+import TableModal from "./TableModal";
 
 export type ApiLogType = Array<{
   success: boolean;
@@ -36,16 +36,14 @@ type Props = {
   }>;
 };
 
-export default function ({ className = "", data }: Props) {
+export default function ({ className = "", data = [] }: Props) {
   return (
     <Card>
       <Flex justifyContent="start" className="space-x-2">
         <Title>Call Logs</Title>
         <Badge color="gray">{data.length}</Badge>
       </Flex>
-      <Text className="mt-2">
-        Detailed description within this period
-      </Text>
+      <Text className="mt-2">Detailed description within this period</Text>
       <Table className="mt-6">
         <TableHead>
           <TableRow>
@@ -70,19 +68,20 @@ export default function ({ className = "", data }: Props) {
               </TableCell>
               <TableCell>{item.error_message || "-"}</TableCell>
               <TableCell>
-                <Button
-                  className="text-right float-right"
-                  size="xs"
-                  variant="secondary"
-                  color="gray"
-                >
-                  See details
-                </Button>
+                <TableModal
+                  className="float-right"
+                  title="Request Details"
+                  description="Request object to the API"
+                  data={item.api_request}
+                />
               </TableCell>
               <TableCell>
-                <Button size="xs" variant="secondary" color="gray">
-                  See details
-                </Button>
+                <TableModal
+                  className="float-left"
+                  title="Response Details"
+                  description="Response object from the API"
+                  data={item.api_response}
+                />
               </TableCell>
             </TableRow>
           ))}
