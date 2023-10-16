@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useAtomValue } from "jotai";
 
-import { isAuthAtom } from "@/state/userAtoms";
+import { isAuthAtom, tokenAtom } from "@/state/userAtoms";
 import { API_BASE_URL } from "@/constants";
 
 type Props = {};
@@ -37,7 +37,9 @@ const Register = (props: Props) => {
     }
   };
 
-  if (isAuthenticated) return router.replace("/");
+  useEffect(() => {
+    if (isAuthenticated) return router.replace("/");
+  }, [isAuthenticated]);
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">

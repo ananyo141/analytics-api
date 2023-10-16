@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useAtom, useSetAtom } from "jotai";
 
 import { API_BASE_URL } from "@/constants";
 import { tokenAtom, rememberMeAtom, isAuthAtom } from "@/state/userAtoms";
@@ -37,13 +37,15 @@ const Login = (props: Props) => {
       toast.success("Logged in successfully");
       setToken(data.data.access);
       setRememberMe(remember);
+      router.push("/");
     } catch (err: any) {
       toast.error(err.toString());
     }
-    window.location.href = "/";
   };
 
-  if (isAuthenticated) return router.replace("/");
+  useEffect(() => {
+    if (isAuthenticated) router.replace("/");
+  }, [isAuthenticated]);
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">

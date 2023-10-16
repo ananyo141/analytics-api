@@ -12,12 +12,13 @@ import {
   DateRangePickerItem,
   DateRangePickerValue,
 } from "@tremor/react";
-import { useAtomValue, useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { addDays, subDays, format } from "date-fns";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 import normalizeChart, { type ChartDataType } from "@/utils/normalizeChart";
-import { tokenAtom, isAuthAtom, clearStorage } from "@/state/userAtoms";
+import { tokenAtom, clearStorage, isAuthAtom } from "@/state/userAtoms";
 import { API_BASE_URL } from "@/constants";
 
 import ApiHitButton from "./ApiHitButton";
@@ -30,8 +31,8 @@ interface StatsType {
 }
 
 export default () => {
-  const isAuthenticated = useAtomValue(isAuthAtom);
   const [token, setToken] = useAtom(tokenAtom);
+  const isAuthenticated = useAtomValue(isAuthAtom);
   const router = useRouter();
 
   const dateNow = new Date();
@@ -55,6 +56,7 @@ export default () => {
   });
 
   const handleLogout = () => {
+    if (!window.confirm("Are you sure you want to logout?")) return;
     clearStorage();
     setToken("");
     router.replace("/login");
@@ -62,42 +64,48 @@ export default () => {
 
   const fetchData = async () => {
     if (!isAuthenticated) return;
-    const res = await fetch(
-      API_BASE_URL +
-        `/hello/analytics/?page=${page}&time_range=custom&start_date=${format(
-          dateRange.from ?? dateNow,
-          "dd-MM-yyyy"
-        )}&end_date=${format(dateRange.to ?? dateNow, "dd-MM-yyyy")}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        next: { revalidate: 60 }, // invalidate cache every minute
-      }
-    );
-    const data = await res.json();
+    try {
+      const res = await fetch(
+        API_BASE_URL +
+          `/hello/analytics/?page=${page}&time_range=custom&start_date=${format(
+            dateRange.from ?? dateNow,
+            "dd-MM-yyyy"
+          )}&end_date=${format(dateRange.to ?? dateNow, "dd-MM-yyyy")}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          next: { revalidate: 60 }, // invalidate cache every minute
+        }
+      );
+      const data = await res.json();
 
-    setTableData(data.results);
-    setStatsData({
-      total_calls: data.count,
-      total_fails: data.failure_count,
-      total_users: data.distinct_users,
-    });
-    setChartData(normalizeChart(data.results as ApiLogType));
-    setButtonLoader({ left: false, right: false });
+      setTableData(data.results);
+      setStatsData({
+        total_calls: data.count,
+        total_fails: data.failure_count,
+        total_users: data.distinct_users,
+      });
+      setChartData(normalizeChart(data.results as ApiLogType));
+      setButtonLoader({ left: false, right: false });
+    } catch (err: any) {
+      toast.error(err.toString());
+    }
   };
 
   useEffect(() => {
     fetchData();
   }, [token, dateRange, page]);
 
-  if (!isAuthenticated) return router.replace("/login");
+  useEffect(() => {
+    if (!isAuthenticated) router.replace("/login");
+  }, [isAuthenticated]);
 
   return (
     <>
-      <div className="flex my-7 flex-col xl:flex-row xl:items-center justify-center gap-2 xl:gap-5">
+      <div className="flex my-7 flex-col sm:flex-row items-center justify-center gap-2 xl:gap-5">
         <DateRangePicker
           className="max-w-md"
           value={dateRange}

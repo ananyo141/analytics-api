@@ -6,10 +6,11 @@ const REMEMBER_STORAGE_KEY = "analytics_remember";
 
 export const rememberMeAtom = atomWithStorage(REMEMBER_STORAGE_KEY, false);
 
-
 export const tokenAtom = atom(
-  localStorage.getItem(ACCESS_STORAGE_KEY) ||
-    sessionStorage.getItem(ACCESS_STORAGE_KEY) ||
+  (typeof window !== "undefined" &&
+    window.localStorage.getItem(ACCESS_STORAGE_KEY)) ||
+    (typeof window !== "undefined" &&
+      window.sessionStorage.getItem(ACCESS_STORAGE_KEY)) ||
     "",
   (get, set, update) => {
     const storage = get(rememberMeAtom) ? localStorage : sessionStorage;
@@ -21,13 +22,14 @@ export const tokenAtom = atom(
       storage.setItem(ACCESS_STORAGE_KEY, update as any);
       set(tokenAtom, update);
     }
-    set(tokenAtom, "");
   }
 );
 
 export const isAuthAtom = atom((get) => get(tokenAtom) !== "");
 
 export const clearStorage = () => {
-  localStorage.removeItem(ACCESS_STORAGE_KEY);
-  sessionStorage.removeItem(ACCESS_STORAGE_KEY);
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(ACCESS_STORAGE_KEY);
+  window.localStorage.removeItem(REMEMBER_STORAGE_KEY);
+  window.sessionStorage.removeItem(ACCESS_STORAGE_KEY);
 };
