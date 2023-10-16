@@ -97,7 +97,7 @@ export default () => {
 
   return (
     <>
-      <div className="flex my-7 items-center justify-center gap-5">
+      <div className="flex my-7 flex-col xl:flex-row xl:items-center justify-center gap-2 xl:gap-5">
         <DateRangePicker
           className="max-w-md"
           value={dateRange}
@@ -140,6 +140,7 @@ export default () => {
         <div className="flex flex-col md:flex-row-reverse items-center gap-5 py-4 justify-center">
           <DonutChart
             className="w-1/2 h-72"
+            showAnimation={true}
             data={[
               {
                 name: "Success",
@@ -154,6 +155,7 @@ export default () => {
           />
           <BarChart
             className="max-w-xl"
+            showAnimation={true}
             data={[
               { name: "Total Calls", count: statsData.total_calls },
               {
