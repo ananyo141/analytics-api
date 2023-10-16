@@ -12,11 +12,12 @@ import {
   DateRangePickerItem,
   DateRangePickerValue,
 } from "@tremor/react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useAtom } from "jotai";
 import { addDays, subDays, format } from "date-fns";
+import { useRouter } from "next/navigation";
 
 import normalizeChart, { type ChartDataType } from "@/utils/normalizeChart";
-import { userAtom } from "@/state/userAtoms";
+import { tokenAtom, isAuthAtom, clearStorage } from "@/state/userAtoms";
 import { API_BASE_URL } from "@/constants";
 
 import ApiHitButton from "./ApiHitButton";
@@ -29,7 +30,10 @@ interface StatsType {
 }
 
 export default () => {
-  const user = useAtomValue(userAtom);
+  const isAuthenticated = useAtomValue(isAuthAtom);
+  const [token, setToken] = useAtom(tokenAtom);
+  const router = useRouter();
+
   const dateNow = new Date();
 
   const [page, setPage] = useState(1);
@@ -50,22 +54,28 @@ export default () => {
     total_users: 0,
   });
 
+  const handleLogout = () => {
+    clearStorage();
+    setToken("");
+    router.replace("/login");
+  };
+
   const fetchData = async () => {
-    if (!user.isAuthenticated) return;
+    if (!isAuthenticated) return;
     const res = await fetch(
       API_BASE_URL +
         `/hello/analytics/?page=${page}&time_range=custom&start_date=${format(
           dateRange.from ?? dateNow,
-          "dd-MM-yyyy",
+          "dd-MM-yyyy"
         )}&end_date=${format(dateRange.to ?? dateNow, "dd-MM-yyyy")}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user.accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
         next: { revalidate: 60 }, // invalidate cache every minute
-      },
+      }
     );
     const data = await res.json();
 
@@ -81,7 +91,9 @@ export default () => {
 
   useEffect(() => {
     fetchData();
-  }, [user.accessToken, dateRange, page]);
+  }, [token, dateRange, page]);
+
+  if (!isAuthenticated) return router.replace("/login");
 
   return (
     <>
@@ -112,6 +124,7 @@ export default () => {
           </DateRangePickerItem>
         </DateRangePicker>
         <ApiHitButton onClick={fetchData} />
+        <Button onClick={handleLogout}>Logout</Button>
       </div>
       <Card>
         <Title className="text-center">

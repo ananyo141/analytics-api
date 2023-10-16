@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useAtomValue } from "jotai";
 
+import { isAuthAtom } from "@/state/userAtoms";
 import { API_BASE_URL } from "@/constants";
 
 type Props = {};
@@ -13,6 +15,8 @@ const Register = (props: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const isAuthenticated = useAtomValue(isAuthAtom);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,6 +36,8 @@ const Register = (props: Props) => {
       toast.error(err.toString());
     }
   };
+
+  if (isAuthenticated) return router.replace("/");
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">

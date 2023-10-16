@@ -4,19 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { useAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { API_BASE_URL } from "@/constants";
-import { userAtom } from "@/state/userAtoms";
+import { tokenAtom, rememberMeAtom, isAuthAtom } from "@/state/userAtoms";
 
 type Props = {};
 
 const Login = (props: Props) => {
-  const [user, setUser] = useAtom(userAtom);
+  const router = useRouter();
+
+  const setToken = useSetAtom(tokenAtom);
+  const setRememberMe = useSetAtom(rememberMeAtom);
+  const isAuthenticated = useAtomValue(isAuthAtom);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
+  const [remember, setRemember] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,15 +35,15 @@ const Login = (props: Props) => {
       if (!data.success)
         return toast.error(data.message || "Something went wrong");
       toast.success("Logged in successfully");
-      setUser({
-        isAuthenticated: true,
-        accessToken: data.data.access,
-      });
-      router.push("/");
+      setToken(data.data.access);
+      setRememberMe(remember);
     } catch (err: any) {
       toast.error(err.toString());
     }
+    window.location.href = "/";
   };
+
+  if (isAuthenticated) return router.replace("/");
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">
@@ -93,6 +97,8 @@ const Login = (props: Props) => {
                       id="remember"
                       aria-describedby="remember"
                       type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
                       className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
                     />
                   </div>
