@@ -13,7 +13,7 @@ import {
   DateRangePickerValue,
 } from "@tremor/react";
 import { useAtomValue } from "jotai";
-import { subDays, format } from "date-fns";
+import { addDays, subDays, format } from "date-fns";
 
 import normalizeChart, { type ChartDataType } from "@/utils/normalizeChart";
 import { userAtom } from "@/state/userAtoms";
@@ -39,7 +39,7 @@ export default () => {
   });
   const [dateRange, setDateRange] = useState<DateRangePickerValue>({
     from: subDays(dateNow, 7), // default to last 7 days
-    to: dateNow,
+    to: addDays(dateNow, 1),
   });
 
   const [chartdata, setChartData] = useState<ChartDataType>([]);
@@ -124,7 +124,7 @@ export default () => {
               format(dateRange.to ?? dateNow, "dd MMM") +
               ")"}
         </Title>
-        <div className="flex items-center gap-5 py-4 flex-row-reverse justify-center">
+        <div className="flex flex-col md:flex-row-reverse items-center gap-5 py-4 justify-center">
           <DonutChart
             className="w-1/2 h-72"
             data={[
